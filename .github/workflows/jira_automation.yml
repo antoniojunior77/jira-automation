@@ -1,0 +1,29 @@
+name: Jira Worklog Automation
+
+on:
+  schedule:
+    # Roda de Segunda a Sexta às 21:00 UTC (aprox. 18h Brasília)
+    - cron: '0 21 * * 1-5'
+  workflow_dispatch: # Permite que você rode manualmente clicando num botão
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout código
+        uses: actions/checkout@v3
+
+      - name: Setup Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.9'
+
+      - name: Instalar dependências
+        run: pip install requests
+
+      - name: Executar Script de Lançamento
+        env:
+          JIRA_EMAIL: ${{ secrets.JIRA_EMAIL }}
+          JIRA_TOKEN: ${{ secrets.JIRA_TOKEN }}
+        run: python jira_log.py
