@@ -4,25 +4,25 @@ import json
 import os
 from datetime import datetime
 
-# Configurações via Variáveis de Ambiente (Secrets do GitHub)
+# Configurações
 URL = "https://primeup.atlassian.net/rest/api/3/issue/MEC-15/worklog"
 EMAIL = os.getenv("JIRA_EMAIL")
 TOKEN = os.getenv("JIRA_TOKEN")
 
 def log_work():
-    # Verifica se é fim de semana (0=Segunda, 5=Sábado, 6=Domingo)
+    # Verifica fim de semana
     if datetime.now().weekday() >= 5:
-        print("Fim de semana. Pulando lançamento.")
+        print("Fim de semana. Pulando.")
         return
 
     auth = HTTPBasicAuth(EMAIL, TOKEN)
     headers = {"Accept": "application/json", "Content-Type": "application/json"}
 
-    # Formata a data atual para o padrão Jira
-    now = datetime.now().strftime("%Y-%m-%dT09:00:00.000+0000")
+    # Ajustado para 09:00 da manhã no fuso de Brasília (-0300)
+    now = datetime.now().strftime("%Y-%m-%dT09:00:00.000-0300")
 
     payload = json.dumps({
-        "timeSpentSeconds": 32400, # 9 horas
+        "timeSpentSeconds": 32400, # 9h
         "comment": {
             "type": "doc",
             "version": 1,
@@ -36,12 +36,14 @@ def log_work():
         "started": now
     })
 
+    print(f"Tentando lançar para a data: {now}")
     response = requests.post(URL, data=payload, headers=headers, auth=auth)
 
     if response.status_code == 201:
-        print(f"Sucesso! Horas lançadas para {now}")
+        print(f"Sucesso! Status 201 - Horas gravadas no Jira.")
     else:
-        print(f"Erro {response.status_code}: {response.text}")
+        print(f"Erro {response.status_code}!")
+        print(f"Resposta do Servidor: {response.text}")
 
 if __name__ == "__main__":
     log_work()
